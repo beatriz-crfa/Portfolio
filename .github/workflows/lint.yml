@@ -22,6 +22,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -33,14 +35,16 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pylint nbqa
 
-    - name: Get changed files
+    - name: Get changed .py and .ipynb files
       id: changed-files
       run: |
         git fetch origin main
-        CHANGED_FILES=$(git diff --name-only HEAD~1 | grep -E '\.py$|\.ipynb$' || true | grep -E '\.py$|\.ipynb$' || true)
+        CHANGED_FILES=$(git diff --name-only origin/main...HEAD | grep -E '\.py$|\.ipynb$' || true)
         echo "$CHANGED_FILES" > changed_files.txt
-        echo "Changed files:"
+
+        echo "==== Changed files detected ===="
         cat changed_files.txt
+        echo "================================"
 
     - name: Run flake8 (incl. nbqa) on changed files
       run: |
