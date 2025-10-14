@@ -47,13 +47,13 @@ jobs:
         echo "Running flake8 checks..."
         status=0
         while IFS= read -r file; do
-          if [[ "$file" == *.py ]]; then
-            echo "flake8 on $file"
-            flake8 --max-line-length=100 --ignore=E203,W503 "$file" || status=1
-          elif [[ "$file" == *.ipynb ]]; then
-            echo "nbqa flake8 on $file"
-            nbqa flake8 --max-line-length=100 --ignore=E203,W503 "$file" || status=1
-          fi
+        if [[ "$file" == *.py ]]; then
+        echo "flake8 on $file"
+        flake8 "$file" || status=1
+        elif [[ "$file" == *.ipynb ]]; then
+        echo "nbqa flake8 on $file"
+        nbqa flake8 "$file" || status=1
+        fi
         done < changed_files.txt
         exit $status
 
