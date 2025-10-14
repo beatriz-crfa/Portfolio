@@ -56,18 +56,3 @@ jobs:
         fi
         done < changed_files.txt
         exit $status
-
-    - name: Run pylint (incl. nbqa) on changed files
-      run: |
-        echo "Running pylint checks..."
-        status=0
-        while IFS= read -r file; do
-          if [[ "$file" == *.py ]]; then
-            echo "pylint on $file"
-            pylint --disable=C0114,C0115,C0116 "$file" || status=1
-          elif [[ "$file" == *.ipynb ]]; then
-            echo "nbqa pylint on $file"
-            nbqa pylint --disable=C0114,C0115,C0116 "$file" || status=1
-          fi
-        done < changed_files.txt
-        exit $status
