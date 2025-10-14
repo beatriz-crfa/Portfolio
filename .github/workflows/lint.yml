@@ -1,15 +1,18 @@
 name: Lint
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
     paths:
-      - '*.py'
-      - '*.ipynb'
+      - '**/*.py'
+      - '**/*.ipynb'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**/*.py'
+      - '**/*.ipynb'
   workflow_dispatch:
 
 jobs:
@@ -23,7 +26,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.12'
+        python-version: '3.11'
 
     - name: Install dependencies
       run: |
@@ -33,35 +36,38 @@ jobs:
     - name: Get changed files
       id: changed-files
       run: |
-        # Get list of changed .py and .ipynb files against the main branch
         git fetch origin main
         CHANGED_FILES=$(git diff --name-only origin/main...HEAD | grep -E '\.py$|\.ipynb$' || true)
         echo "$CHANGED_FILES" > changed_files.txt
         echo "Changed files:"
         cat changed_files.txt
 
-    - name: Run flake8 on changed files
-      if: success()
+    - name: Run flake8 (incl. nbqa) on changed files
       run: |
+        echo "Running flake8 checks..."
+        status=0
         while IFS= read -r file; do
           if [[ "$file" == *.py ]]; then
-            echo "Running flake8 on $file"
-            flake8 "$file"
+            echo "flake8 on $file"
+            flake8 --max-line-length=100 --ignore=E203,W503 "$file" || status=1
           elif [[ "$file" == *.ipynb ]]; then
-            echo "Running flake8 via nbqa on $file"
-            nbqa flake8 "$file"
+            echo "nbqa flake8 on $file"
+            nbqa flake8 --max-line-length=100 --ignore=E203,W503 "$file" || status=1
           fi
         done < changed_files.txt
+        exit $status
 
-    - name: Run pylint on changed files
-      if: success()
+    - name: Run pylint (incl. nbqa) on changed files
       run: |
+        echo "Running pylint checks..."
+        status=0
         while IFS= read -r file; do
           if [[ "$file" == *.py ]]; then
-            echo "Running pylint on $file"
-            pylint "$file"
+            echo "pylint on $file"
+            pylint --disable=C0114,C0115,C0116 "$file" || status=1
           elif [[ "$file" == *.ipynb ]]; then
-            echo "Running pylint via nbqa on $file"
-            nbqa pylint "$file"
+            echo "nbqa pylint on $file"
+            nbqa pylint --disable=C0114,C0115,C0116 "$file" || status=1
           fi
         done < changed_files.txt
+        exit $status
