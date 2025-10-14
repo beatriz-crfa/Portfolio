@@ -10,6 +10,7 @@ on:
     paths:
       - '*.py'
       - '*.ipynb'
+  workflow_dispatch:
 
 jobs:
   lint:
